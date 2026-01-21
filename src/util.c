@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: MIT License
  *
 */
-#include "include/util.h"
+#include "util.h"
 #include "pico/printf.h"
 #include "pico/stdio.h"
 #include "pico/stdlib.h"

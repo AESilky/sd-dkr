@@ -16,7 +16,7 @@
 #include "term.h"
 #include "shell.h"
 
-#include "include/util.h"
+#include "util.h"
 #include "pico/printf.h"
 
 #include <stdlib.h> // malloc

@@ -13,7 +13,7 @@
 
 #include "board.h"
 #include "multicore.h" // Some of the disk commands must be run on Core0
-#include "include/util.h"
+#include "util.h"
 
 #include "shell/include/shell.h"
 #include "shell/cmd/cmd_t.h"

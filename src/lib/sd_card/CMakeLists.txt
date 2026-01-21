@@ -14,7 +14,8 @@ target_sources(SD_FatFs INTERFACE
     ${CMAKE_CURRENT_LIST_DIR}/src/my_debug.c
     ${CMAKE_CURRENT_LIST_DIR}/src/rtc.c
 )
-target_include_directories(SD_FatFs INTERFACE
+target_include_directories(SD_FatFs BEFORE INTERFACE
+    ${CMAKE_CURRENT_LIST_DIR}/include
     ff15/source
     sd_driver
     include

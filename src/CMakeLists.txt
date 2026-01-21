@@ -59,7 +59,7 @@ set(PICO_STDIO_UART 0)
 set(PICO_STDIO_USB 0)
 
 
-project(RP_Module C CXX ASM)
+project(SD_DKR C CXX ASM)
 
 
 add_compile_options(
@@ -88,17 +88,58 @@ add_compile_definitions(
 pico_sdk_init()
 
 set(VERSION "1.0")
-set(NAME_BASE "RP_Module")
+set(NAME_BASE "SD_DKR")
 
-# Use 'target_include_directories` rather than `include_directories`
-#include_directories(
-#)
+#
+# Top-level sources
+#
+set(TL_SRC
+main.c
+board.c
+multicore.c
+pio_sm.c
+util.c
+)
+
+#
+# Add executable (output) with Debug Mode enabled by default
+#
+add_executable(dkr
+  ${TL_SRC}
+)
+#
+# Add executable (output) with Debug Mode enabled by default
+#
+add_executable(dkr_db
+  ${TL_SRC}
+)
+#
+# Add executable (output) for Bus Master with Debug Mode enabled by default
+#   We only build 'Bus Master' in debug mode, as it is only used for testing.
+#
+add_executable(dkr_bm_db
+  ${TL_SRC}
+)
+
+# Use 'target_include_directories` rather than `include_directories` except for the main include dir.
+include_directories(
+  ${CMAKE_CURRENT_LIST_DIR}/include
+)
+target_include_directories(dkr BEFORE PUBLIC
+  ${CMAKE_CURRENT_LIST_DIR}/include
+)
+target_include_directories(dkr_db BEFORE PUBLIC
+  ${CMAKE_CURRENT_LIST_DIR}/include
+)
+target_include_directories(dkr_bm_db BEFORE PUBLIC
+  ${CMAKE_CURRENT_LIST_DIR}/include
+)
+
 set(PICO_INCLUDES
 )
 
 # Include paths for the entire application
 set(APP_INCLUDES
-  ${CMAKE_CURRENT_LIST_DIR}/include
   ${CMAKE_CURRENT_LIST_DIR}/cmt/include
   $(CMAKE_CURRENT_LIST_DIR)/dbusc/include
   ${CMAKE_CURRENT_LIST_DIR}/dbusm/include
@@ -136,16 +177,79 @@ set(PICO_LIBS
   pico_stdio_uart
   pico_stdio_usb
 )
+
 #
-# Top-level sources
+# Configuration - Debug Mode disabled by default
 #
-set(TL_SRC
-main.c
-board.c
-multicore.c
-pio_sm.c
-util.c
+pico_set_program_name(dkr ${NAME_BASE})
+pico_set_program_version(dkr ${VERSION})
+target_compile_definitions(dkr PUBLIC
+	DEBUG_MODE=0
 )
+# Add the required include file paths for this module
+target_include_directories(dkr PUBLIC
+  ${CMAKE_CURRENT_LIST_DIR}
+  ${APP_INCLUDES}
+  ${PICO_INCLUDES}
+)
+# Link in the Modules/Libraries for the top-level
+target_link_libraries(dkr PUBLIC
+  ${CORE_LIBS}
+  ${PICO_LIBS}
+  ${EXT_LIBS}
+)
+pico_set_linker_script(dkr ${CMAKE_SOURCE_DIR}/memmap_2040_cstm.ld)
+pico_add_extra_outputs(dkr)
+
+
+#
+# Configuration - Debug Mode enabled by default
+#
+pico_set_program_name(dkr_db "${NAME_BASE}_DB")
+pico_set_program_version(dkr_db ${VERSION})
+target_compile_definitions(dkr_db PUBLIC
+	DEBUG_MODE=1
+)
+# Add the required include file paths for this module
+target_include_directories(dkr_db PUBLIC
+  ${CMAKE_CURRENT_LIST_DIR}
+  ${APP_INCLUDES}
+  ${PICO_INCLUDES}
+)
+# Link in the Modules/Libraries for the top-level
+target_link_libraries(dkr_db
+  ${CORE_LIBS}
+  ${PICO_LIBS}
+  ${EXT_LIBS}
+)
+pico_set_linker_script(dkr_db ${CMAKE_SOURCE_DIR}/memmap_2040_cstm.ld)
+pico_add_extra_outputs(dkr_db)
+
+
+#
+# Configuration - Bus Master with Debug Mode enabled by default
+#
+pico_set_program_name(dkr_bm_db "${NAME_BASE}_bm_DB")
+pico_set_program_version(dkr_bm_db ${VERSION})
+target_compile_definitions(dkr_bm_db PUBLIC
+  BUS_MASTER
+	DEBUG_MODE=1
+)
+# Add the required include file paths for this module
+target_include_directories(dkr_bm_db PUBLIC
+  ${CMAKE_CURRENT_LIST_DIR}
+  ${APP_INCLUDES}
+  ${PICO_INCLUDES}
+)
+# Link in the Modules/Libraries for the top-level
+target_link_libraries(dkr_bm_db
+  ${CORE_LIBS}
+  ${PICO_LIBS}
+  ${EXT_LIBS}
+)
+pico_set_linker_script(dkr_bm_db ${CMAKE_SOURCE_DIR}/memmap_2040_cstm.ld)
+pico_add_extra_outputs(dkr_bm_db)
+
 #
 # Build the subdirectories
 #
@@ -164,84 +268,3 @@ add_subdirectory(dskops)
 set(EXT_LIBS
 )
 add_subdirectory(lib)
-
-#
-# Add executable (output) with Debug Mode disabled by default
-#
-add_executable(dkr
-  ${TL_SRC}
-)
-pico_set_program_name(dkr ${NAME_BASE})
-pico_set_program_version(dkr ${VERSION})
-target_compile_definitions(dkr PUBLIC
-	DEBUG_MODE=0
-)
-# Add the required include file paths for this module
-target_include_directories(dkr SYSTEM PUBLIC
-  ${PICO_INCLUDES}
-  ${CMAKE_CURRENT_LIST_DIR}
-  ${APP_INCLUDES}
-)
-# Link in the Modules/Libraries for the top-level
-target_link_libraries(dkr PUBLIC
-  ${CORE_LIBS}
-  ${PICO_LIBS}
-  ${EXT_LIBS}
-)
-pico_set_linker_script(dkr ${CMAKE_SOURCE_DIR}/memmap_2040_cstm.ld)
-pico_add_extra_outputs(dkr)
-
-
-#
-# Add executable (output) with Debug Mode enabled by default
-#
-add_executable(dkr_db
-  ${TL_SRC}
-)
-pico_set_program_name(dkr_db "${NAME_BASE}_DB")
-pico_set_program_version(dkr_db ${VERSION})
-target_compile_definitions(dkr_db PUBLIC
-	DEBUG_MODE=1
-)
-# Add the required include file paths for this module
-target_include_directories(dkr_db SYSTEM PUBLIC
-  ${PICO_INCLUDES}
-  ${CMAKE_CURRENT_LIST_DIR}
-  ${APP_INCLUDES}
-)
-# Link in the Modules/Libraries for the top-level
-target_link_libraries(dkr_db
-  ${CORE_LIBS}
-  ${PICO_LIBS}
-  ${EXT_LIBS}
-)
-pico_set_linker_script(dkr_db ${CMAKE_SOURCE_DIR}/memmap_2040_cstm.ld)
-pico_add_extra_outputs(dkr_db)
-
-
-#
-# Add executable (output) for Bus Master with Debug Mode enabled by default
-#
-add_executable(dkr_master_db
-  ${TL_SRC}
-)
-pico_set_program_name(dkr_master_db "${NAME_BASE}_master_DB")
-pico_set_program_version(dkr_master_db ${VERSION})
-target_compile_definitions(dkr_master_db PUBLIC
-  BUS_MASTER
-	DEBUG_MODE=1
-)
-# Add the required include file paths for this module
-target_include_directories(dkr_master_db SYSTEM PUBLIC
-  ${PICO_INCLUDES}
-  ${CMAKE_CURRENT_LIST_DIR}
-  ${APP_INCLUDES}
-)
-# Link in the Modules/Libraries for the top-level
-target_link_libraries(dkr_master_db
-  ${CORE_LIBS}
-  ${PICO_LIBS}
-  ${EXT_LIBS}
-)
-pico_set_linker_script(dkr_master_db ${CMAKE_SOURCE_DIR}/memmap_2040_cstm.ld)
-pico_add_extra_outputs(dkr_master_db)

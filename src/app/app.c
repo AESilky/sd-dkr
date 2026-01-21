@@ -15,7 +15,7 @@
 
 #include "board.h"
 #include "debug_support.h"
-#include "include/util.h"
+#include "util.h"
 
 #include "shell.h"
 #include "hwrt_t.h"

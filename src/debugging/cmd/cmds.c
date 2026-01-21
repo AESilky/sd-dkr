@@ -11,7 +11,7 @@
 
 #include "shell/cmd/cmd_t.h"
 #include "shell/include/shell.h"
-#include "include/util.h"
+#include "util.h"
 
 
 #include <stdlib.h>

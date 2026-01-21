@@ -16,7 +16,7 @@
 
 #include "cmt.h"
 #include "app.h"
-#include "include/util.h"
+#include "util.h"
 
 #include "dskops/dskops.h"
 

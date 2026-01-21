@@ -11,7 +11,7 @@
 #include "cmd.h"
 #include "cmt.h"
 #include "term.h"
-#include "include/util.h"
+#include "util.h"
 
 #include "cmd/cmd_t.h"
 #include "dbusc/cmd/cmds.h"
