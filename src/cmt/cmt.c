@@ -14,7 +14,7 @@
 #include "board.h"
 #include "debug_support.h"
 #include "picoutil.h"
-#include "include/util.h"
+#include "util.h"
 
 #include "hardware/clocks.h"
 #include "hardware/pwm.h"

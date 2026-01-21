@@ -8,6 +8,9 @@
 		"files.exclude": {
 			"build/**/*": true
 		},
-		"cortex-debug.variableUseNaturalFormat": false
+		"cortex-debug.variableUseNaturalFormat": false,
+		"cSpell.words": [
+			"multicore"
+		]
 	}
 }

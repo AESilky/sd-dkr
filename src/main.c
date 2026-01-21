@@ -11,6 +11,7 @@
 #include "debug_support.h"
 #include "multicore.h"
 #include "picoutil.h"
+#include "util.h"
 //
 #include "cmt.h"
 #include "hwrt/hwrt.h"
@@ -21,24 +22,19 @@
 #include <stdio.h>
 
 
-#define DOT_MS 60 // Dot at 20 WPM
-#define UP_MS  DOT_MS
-#define DASH_MS (2 * DOT_MS)
-#define CHR_SP (3 * DOT_MS)
-
  // 'H' (....) 'I' (..)
 [[maybe_unused]] static const int32_t say_hi[] = {
-    DOT_MS,
-    UP_MS,
-    DOT_MS,
-    UP_MS,
-    DOT_MS,
-    UP_MS,
-    DOT_MS,
-    CHR_SP,
-    DOT_MS,
-    UP_MS,
-    DOT_MS,
+    MORSE_DOT_MS,
+    MORSE_UP_MS,
+    MORSE_DOT_MS,
+    MORSE_UP_MS,
+    MORSE_DOT_MS,
+    MORSE_UP_MS,
+    MORSE_DOT_MS,
+    MORSE_CHR_SP_MS,
+    MORSE_DOT_MS,
+    MORSE_UP_MS,
+    MORSE_DOT_MS,
     0 };
 
 int main() {

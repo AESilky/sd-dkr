@@ -61,6 +61,11 @@ extern "C" {
     typedef bool boolean;
     typedef uint8_t byte;
 
+#define MORSE_DOT_MS 60 // Dot milliseconds at 20 WPM
+#define MORSE_UP_MS  MORSE_DOT_MS
+#define MORSE_DASH_MS (2 * MORSE_DOT_MS)
+#define MORSE_CHR_SP_MS (3 * MORSE_DOT_MS)
+
     // Memory/Computer Sizes
 #define ONE_K (1024)
 #define ONE_M (ONE_K*ONE_K)
