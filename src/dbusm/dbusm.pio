@@ -1,0 +1,58 @@
+;
+; Copyright 2025-26 AESilky (SilkyDESIGN)
+; SPDX-License-Identifier: MIT
+;
+
+; Control Bus signal control.
+;
+.pio_version RP2040
+
+.define MS      0
+.define RD      0
+.define WR      0
+
+.program cbm_in
+; Control Bus Master In (READ from BUS)
+;
+; Waits on an IRQ bit to do a READ
+;
+.side_set   3 opt   ; RD-,WR-,MS- (WR- not used, but is between RD- and MS-)
+
+.define MS_OFF  4
+.define RD_OFF  1
+.define WR_OFF  2
+
+PUBLIC start_rd:
+    mov     osr,null        side (MS_OFF|RD_OFF|WR_OFF)     ; OSR all 0's, CRTL OFF
+    out     pindirs,8                                       ; Assure Data Bus is INPUT
+    irq     wait 4                                          ; Wait on IRQ4
+    nop                     side (MS|RD|WR_OFF)     [1]     ; MS- & RD- ON
+.wrap_target
+    jmp     pin,read_bus                            [1]     ; Go to read bus if !WAIT
+.wrap
+read_bus:
+    in      pins,8          side (MS|RD_OFF|WR_OFF)         ; Read Data Bus
+    push
+    jmp     start_rd
+
+
+.program cbm_out
+; Control Bus Master Out (WRITE to BUS)
+;
+.side_set   2 opt   ; WR-,MS-
+
+.define MS_OFF  2
+.define WR_OFF  1
+
+PUBLIC start_wr:
+    mov     osr,null        side (MS_OFF|WR_OFF)        ; OSR all 0's
+    out     pindirs,8                                   ; Data Bus to INPUT while idle
+    pull                                                ; Wait for data to output
+    out     pins,8          side (MS|WR_OFF)            ; Data to BUS and MS- ON
+    mov     osr,!null       side (MS|WR_OFF)            ; OSR all 1's
+    out     pindirs,8                                   ; Data Bus to OUTPUT
+    nop                     side (MS|WR)          [1]   ; MS- & WR- ON
+.wrap_target
+    jmp     pin,start_wr                                ; Get next byte if !WAIT
+.wrap
+
