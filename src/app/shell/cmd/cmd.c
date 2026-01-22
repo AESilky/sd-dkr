@@ -30,10 +30,23 @@ typedef struct CMD_ENTRY_LL_ {
 
 #define CMD_LINE_MAX_ARGS 64
 
-// Buffer to save the last input line into for recall
-static char _cmdline_last[shell_GETLINE_MAX_LEN_];
+// Buffers to save the last input line into for recall (must be power of 2)
+#define CMD_HIST_LINES 8
+static char _cmdhist0[SHELL_GETLINE_MAX_LEN];
+static char _cmdhist1[SHELL_GETLINE_MAX_LEN];
+static char _cmdhist2[SHELL_GETLINE_MAX_LEN];
+static char _cmdhist3[SHELL_GETLINE_MAX_LEN];
+static char _cmdhist4[SHELL_GETLINE_MAX_LEN];
+static char _cmdhist5[SHELL_GETLINE_MAX_LEN];
+static char _cmdhist6[SHELL_GETLINE_MAX_LEN];
+static char _cmdhist7[SHELL_GETLINE_MAX_LEN];
+static char* _cmdhist[] = {_cmdhist0, _cmdhist1, _cmdhist2, _cmdhist3, _cmdhist4, _cmdhist5, _cmdhist6, _cmdhist7};
+static int _cmd_ndx;
+static int _cmdhist_ndx;
+static char _cmd_line_tmp[SHELL_GETLINE_MAX_LEN];
+
 // Buffer to copy the input line into to be parsed.
-static char _cmdline_parsed[shell_GETLINE_MAX_LEN_];
+static char _cmdline_parsed[SHELL_GETLINE_MAX_LEN];
 // Last executed command exit value
 static int _exit_val;
 
@@ -292,14 +305,50 @@ static void _cmd_attn_handler(cmt_msg_t* msg) {
     }
 }
 
-static void _handle_cc_recall_last(char c) {
-    // ^K can be typed to put the last command entered on the current input line.
-    shell_getline_append(_cmdline_last);
+static void _cmd_history_next() {
+    if (_cmdhist_ndx != _cmd_ndx) {
+        _cmdhist_ndx = ((_cmdhist_ndx + 1) & (CMD_HIST_LINES - 1));
+        if (_cmdhist_ndx != _cmd_ndx) {
+            shell_getline_replace(_cmdhist[_cmdhist_ndx]);
+        }
+        else {
+            shell_getline_replace(_cmd_line_tmp);
+        }
+    }
 }
 
-static bool _handle_es_recall_last(sescseq_t escseq, const char* escstr) {
-    // Up-Arrow (ESC[A) can be typed to put the last command entered on the current input line.
-    shell_getline_append(_cmdline_last);
+static void _cmd_history_prior() {
+    if (_cmdhist_ndx == _cmd_ndx) {
+        // Grab the in-process line from the shell
+        strcpy(_cmd_line_tmp, shell_getline_buf());
+    }
+    int prior_ndx = _cmdhist_ndx;
+    prior_ndx = ((prior_ndx - 1) & (CMD_HIST_LINES - 1));
+    if (prior_ndx != _cmd_ndx && *_cmdhist[prior_ndx]) {
+        _cmdhist_ndx = prior_ndx;
+        shell_getline_replace(_cmdhist[_cmdhist_ndx]);
+    }
+}
+
+static void _handle_cc_recall_prior(char c) {
+    // ^K can be typed to put the last command entered on the current input line.
+    _cmd_history_prior();
+}
+
+static void _handle_cc_recall_next(char c) {
+    // ^L can be typed to put the next command entered on the current input line.
+    _cmd_history_next();
+}
+
+static bool _handle_es_recall_prior(sescseq_t escseq, const char* escstr) {
+    // Up-Arrow (ESC[A) can be typed to put the prior command entered on the current input line.
+    _cmd_history_prior();
+    return (true);
+}
+
+static bool _handle_es_recall_next(sescseq_t escseq, const char* escstr) {
+    // Down-Arrow (ESC[B) can be typed to put the next command entered on the current input line.
+    _cmd_history_next();
     return (true);
 }
 
@@ -352,52 +401,56 @@ static void _process_line(char* line) {
 
     shell_puts("\n");
 
-    // Copy the line into a buffer for parsing
-    strcpy(_cmdline_parsed, line);
-    strcpy(_cmdline_last, line);
+    if (strlen(line) > 0) {
+        // Update history (we keep history even if invalid)
+        int pci = ((_cmd_ndx - 1) & (CMD_HIST_LINES - 1));
+        // Don't store the line if it matches the last one
+        if (strcmp(line, _cmdhist[pci]) != 0) {
+            strcpy(_cmdhist[_cmd_ndx], line);
+            _cmd_ndx = ((_cmd_ndx + 1) & (CMD_HIST_LINES - 1));
+        }
+        _cmdhist_ndx = _cmd_ndx;
+        *_cmd_line_tmp = '\0';
 
-    int argc = parse_line(_cmdline_parsed, argv, CMD_LINE_MAX_ARGS);
-    char* user_cmd = argv[0];
-    int user_cmd_len = strlen(user_cmd);
-    bool command_matched = false;
+        // Copy the line into a buffer for parsing
+        strcpy(_cmdline_parsed, line);
+        int argc = parse_line(_cmdline_parsed, argv, CMD_LINE_MAX_ARGS);
+        char* user_cmd = argv[0];
+        int user_cmd_len = strlen(user_cmd);
+        bool command_matched = false;
 
-    if (user_cmd_len > 0) {
-        const cmd_handler_entry_t* cmd;
-        cmd_entry_ll_t* cmds = _cmds;
-        int chrv = 0;
+        if (user_cmd_len > 0) {
+            const cmd_handler_entry_t* cmd;
+            cmd_entry_ll_t* cmds = _cmds;
+            int chrv = 0;
 
-        while (NULL != cmds) {
-            cmd = cmds->che;
-            cmds = cmds->next;
-            int cmd_name_len = strlen(cmd->name);
-            if (user_cmd_len <= cmd_name_len && user_cmd_len >= cmd->min_match) {
-                if (0 == strncmp(cmd->name, user_cmd, user_cmd_len)) {
-                    // This command matches
-                    command_matched = true;
-                    _cmd_state = CMD_EXECUTING_COMMAND;
-                    // Clear the Global Error Number
-                    ERRORNO = 0;
-                    chrv = cmd->cmd(argc, argv, line);
-                    _exit_val = chrv;
-                    break;
+            while (NULL != cmds) {
+                cmd = cmds->che;
+                cmds = cmds->next;
+                int cmd_name_len = strlen(cmd->name);
+                if (user_cmd_len <= cmd_name_len && user_cmd_len >= cmd->min_match) {
+                    if (0 == strncmp(cmd->name, user_cmd, user_cmd_len)) {
+                        // This command matches
+                        command_matched = true;
+                        _cmd_state = CMD_EXECUTING_COMMAND;
+                        // Clear the Global Error Number
+                        ERRORNO = 0;
+                        chrv = cmd->cmd(argc, argv, line);
+                        _exit_val = chrv;
+                        break;
+                    }
                 }
             }
+            if (!command_matched) {
+                shell_printf("Command not found: '%s'. Try 'help'.\n", user_cmd);
+            }
         }
-        if (!command_matched) {
-            shell_printf("Command not found: '%s'. Try 'help'.\n", user_cmd);
-        }
     }
-    // If we aren't currently busy, get another line from the user.
-    if (!false) {
-        // Get a command from the user...
-        _cmd_state = CMD_COLLECTING_LINE;
-        shell_use_cmd_color();
-        shell_putc(CMD_PROMPT);
-        shell_getline(_process_line);
-    }
-    else {
-        cmd_activate(true);
-    }
+    // Get another command from the user...
+    _cmd_state = CMD_COLLECTING_LINE;
+    shell_use_cmd_color();
+    shell_putc(CMD_PROMPT);
+    shell_getline(_process_line);
 }
 
 static void _set_wakeup_hook() {
@@ -560,10 +613,17 @@ void cmd_modinit() {
     cmd_register(&_cmd_help_entry);
     cmd_register(&_cmd_hex_entry);
 
+    // Clear the command history buffers
+    for (int i = 0; i < CMD_HIST_LINES; i++) {
+        *_cmdhist[i] = '\0';
+    }
+    _cmd_ndx = _cmdhist_ndx = 0;
     // Register the control character handlers.
     shell_register_control_char_handler(CMD_REINIT_TERM_CHAR, _handle_cc_reinit_terminal);
-    shell_register_control_char_handler(CMD_RECALL_LAST_CHAR, _handle_cc_recall_last);
-    shell_register_esc_seq_handler(SES_KEY_ARROW_UP, _handle_es_recall_last);
+    shell_register_control_char_handler(CMD_RECALL_LAST_CHAR, _handle_cc_recall_prior);
+    shell_register_control_char_handler(CMD_RECALL_NEXT_CHAR, _handle_cc_recall_next);
+    shell_register_esc_seq_handler(SES_KEY_ARROW_UP, _handle_es_recall_prior);
+    shell_register_esc_seq_handler(SES_KEY_ARROW_DN, _handle_es_recall_next);
     //
     // Register our message handler
     cmt_msg_hdlr_add(MSG_CMD_KEY_PRESSED, _cmd_attn_handler);

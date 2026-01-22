@@ -12,23 +12,23 @@
 // cbm_in //
 // ------ //
 
-#define cbm_in_wrap_target 4
-#define cbm_in_wrap 4
+#define cbm_in_wrap_target 0
+#define cbm_in_wrap 7
 #define cbm_in_pio_version 0
 
-#define cbm_in_offset_start_rd 0u
+#define cbm_in_offset_start 0u
 
 static const uint16_t cbm_in_program_instructions[] = {
+            //     .wrap_target
     0xbee3, //  0: mov    osr, null       side 7
     0x6088, //  1: out    pindirs, 8
     0xc024, //  2: irq    wait 4
     0xb542, //  3: nop                    side 2 [1]
-            //     .wrap_target
-    0x01c5, //  4: jmp    pin, 5                 [1]
+    0x01c6, //  4: jmp    pin, 6                 [1]
+    0x0004, //  5: jmp    4
+    0x5608, //  6: in     pins, 8         side 3
+    0x9e20, //  7: push   block           side 7
             //     .wrap
-    0x5608, //  5: in     pins, 8         side 3
-    0x8020, //  6: push   block
-    0x0000, //  7: jmp    0
 };
 
 #if !PICO_NO_HARDWARE
