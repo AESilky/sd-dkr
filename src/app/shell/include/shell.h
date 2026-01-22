@@ -12,9 +12,9 @@ extern "C" {
 #endif
 
 #include "cmt.h"
-#include "../term/term.h"
+#include "term.h"
 
-#define shell_NAME_VERSION "SD Flash Programmer"
+#define shell_NAME_VERSION "SD Disk/Keyboard/RTC Module"
 
 
 // NOTE: Terminal line and column numbers are 1-based.
@@ -53,7 +53,7 @@ typedef struct _TERM_COLOR_PAIR_ {
     term_color_t bg;
 } term_color_pair_t;
 
-#define shell_GETLINE_MAX_LEN_  256 // Maximum line length (including /0) for the `term_getline` function
+#define SHELL_GETLINE_MAX_LEN  256 // Maximum line length (including /0) for the `term_getline` function
 
 /**
  * @brief Function prototype registered to handle control characters.
@@ -75,10 +75,12 @@ typedef void (*shell_control_char_handler)(char c);
  * @brief ENUM of the supported ESC sequences.
  */
 typedef enum SHELL_ESC_SEQUENCE_ {
-    SES_KEY_ARROW_LF = 0,
-    SES_KEY_ARROW_UP = 1,
+    SES_KEY_ARROW_UP = 0, // CSI A
+    SES_KEY_ARROW_DN = 1, // CSI B
+    SES_KEY_ARROW_RT = 2, // CSI C
+    SES_KEY_ARROW_LF = 3, // CSI D
 } sescseq_t;
-#define _SEH_NUM (SES_KEY_ARROW_UP + 1)
+#define _SEH_NUM (SES_KEY_ARROW_LF + 1)
 
 /**
  * @brief Function prototype for handlers to register for escape sequences.
@@ -170,6 +172,14 @@ extern void shell_getline(shell_getline_callback_fn getline_cb);
 extern void shell_getline_append(const char* appndstr);
 
 /**
+ * @brief The in-process `getline` buffer.
+ * @ingroup ui
+ *
+ * @return const char* In-process `getline` buffer.
+ */
+extern const char* shell_getline_buf();
+
+/**
  * @brief Cancel a `shell_getline` that is inprogress.
  * @ingroup ui
  * @see shell_getline
@@ -177,6 +187,16 @@ extern void shell_getline_append(const char* appndstr);
  * @param input_handler Input available handler to replace the `shell_getline` handler. Can be NULL.
  */
 extern void shell_getline_cancel(shell_input_available_handler input_handler);
+
+/**
+ * @brief Replace the current getline collected text.
+ * @ingroup ui
+ *
+ * The replacement text must be <= `SHELL_GETLINE_MAX_LEN`.
+ *
+ * @param rplcstr String to replace current input line with.
+ */
+extern void shell_getline_replace(const char* rplcstr);
 
 /**
  * @brief Handle a control character by calling the handler if one is registered.

@@ -39,7 +39,7 @@ static shell_control_char_handler _control_char_handler[32]; // Room for a handl
 
 static shell_escape_seq_handler _escseq_handler[_SEH_NUM]; // Room for the ESC Sequences that we support
 
-static char _getline_buf[shell_GETLINE_MAX_LEN_];
+static char _getline_buf[SHELL_GETLINE_MAX_LEN];
 static int16_t _getline_index;
 
 static int _esc_collecting; // If -1, not collecting. Else, index to store the next received character until done.
@@ -222,6 +222,22 @@ static bool _process_char(char c, bool process_ctrl) {
                         processed = fn(SES_KEY_ARROW_UP, _esc_collected);
                     }
                 }
+                // 'Down Arrow' "CSI B"
+                if (_esc_collecting == 2 && 'B' == c) {
+                    // This is 'Down Arrow'
+                    shell_escape_seq_handler fn = _get_escseq_handler(SES_KEY_ARROW_DN);
+                    if (fn) {
+                        processed = fn(SES_KEY_ARROW_DN, _esc_collected);
+                    }
+                }
+                // 'Right Arrow' "CSI C"
+                if (_esc_collecting == 2 && 'C' == c) {
+                    // This is 'Right Arrow'
+                    shell_escape_seq_handler fn = _get_escseq_handler(SES_KEY_ARROW_RT);
+                    if (fn) {
+                        processed = fn(SES_KEY_ARROW_RT, _esc_collected);
+                    }
+                }
                 // 'Left Arrow' "CSI D"
                 if (_esc_collecting == 2 && 'D' == c) {
                     // This is 'Left Arrow'
@@ -244,10 +260,11 @@ static bool _process_char(char c, bool process_ctrl) {
             case '\r':
                 // EOL - Terminate the input line and give to callback.
                 _getline_buf[_getline_index] = '\0';
-                _getline_index = 0;
                 _getline_callback = NULL;
                 _input_available_handler = NULL; // Cleared when called
                 fn(_getline_buf);
+                _getline_index = 0;
+                _getline_buf[_getline_index] = '\0';
                 return (true);
                 break;
             case BS:
@@ -282,7 +299,7 @@ static bool _process_char(char c, bool process_ctrl) {
         }
     }
     if (!processed && c >= ' ' && c < DEL) {
-        if (_getline_index < (shell_GETLINE_MAX_LEN_ - 1)) {
+        if (_getline_index < (SHELL_GETLINE_MAX_LEN - 1)) {
             _getline_buf[_getline_index++] = c;
             putchar(c);
         }
@@ -326,8 +343,26 @@ void shell_getline(shell_getline_callback_fn getline_cb) {
 
 void shell_getline_append(const char* appndstr) {
     char c;
-    while ((c = *appndstr++) && (_getline_index < (shell_GETLINE_MAX_LEN_ - 1))) {
+    while ((c = *appndstr++) && (_getline_index < (SHELL_GETLINE_MAX_LEN - 1))) {
         _process_char(c, false);
+    }
+}
+
+const char* shell_getline_buf() {
+    return (_getline_buf);
+}
+
+void shell_getline_replace(const char* rplcstr) {
+    int len = strlen(rplcstr);
+    if (len < SHELL_GETLINE_MAX_LEN) {
+        strcpy(_getline_buf, rplcstr);
+        _getline_index = len;
+        term_cursor_on(false);
+        term_cursor_bol();
+        term_erase_line();
+        shell_putc(CMD_PROMPT);
+        shell_puts(rplcstr);
+        term_cursor_on(true);
     }
 }
 
