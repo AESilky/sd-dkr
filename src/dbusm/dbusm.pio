@@ -22,18 +22,19 @@
 .define RD_OFF  1
 .define WR_OFF  2
 
-PUBLIC start_rd:
+PUBLIC start:
+.wrap_target
     mov     osr,null        side (MS_OFF|RD_OFF|WR_OFF)     ; OSR all 0's, CRTL OFF
     out     pindirs,8                                       ; Assure Data Bus is INPUT
     irq     wait 4                                          ; Wait on IRQ4
     nop                     side (MS|RD|WR_OFF)     [1]     ; MS- & RD- ON
-.wrap_target
+wait_rqstd:
     jmp     pin,read_bus                            [1]     ; Go to read bus if !WAIT
-.wrap
+    jmp     wait_rqstd
 read_bus:
     in      pins,8          side (MS|RD_OFF|WR_OFF)         ; Read Data Bus
-    push
-    jmp     start_rd
+    push                    side (MS_OFF|RD_OFF|WR_OFF)
+.wrap
 
 
 .program cbm_out

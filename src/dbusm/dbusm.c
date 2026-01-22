@@ -50,9 +50,9 @@ static pio_sm_pocfg _cbm_rd_pio_init(PIO pio, uint sm, uint dbpin, uint ctrlpin,
     pio_sm_pocfg smpocfg = pio_sm_configure(
         pio, sm, &cbm_in_program, cbm_in_program_get_default_config, 16.0f, PIO_FIFO_JOIN_NONE,
         8, true, false,
-        0, false, false,
+        8, true, false,
         dbpin, 8,
-        0, 0,
+        dbpin, 8,
         0, 0,
         ctrlpin, 3,
         waitpin
@@ -61,39 +61,12 @@ static pio_sm_pocfg _cbm_rd_pio_init(PIO pio, uint sm, uint dbpin, uint ctrlpin,
 }
 
 static pio_sm_pocfg _cbm_wr_pio_init(PIO pio, uint sm, uint dbpin, uint ctrlpin, uint waitpin) {
-    // pio_sm_set_enabled(pio, sm, false);
-
-    // pio_sm_pocfg smpocfg;
-    // smpocfg.pio = pio;
-    // smpocfg.sm = sm;
-
-    // // install the program in the PIO shared instruction space
-    // const pio_program_t* pio_prgm = &cbm_out_program;
-    // smpocfg.offset = pio_add_program(pio, pio_prgm);
-    // if (smpocfg.offset < 0) {
-    //     return smpocfg;      // the program could not be added
-    // }
-
-    // smpocfg.sm_cfg = cbm_out_program_get_default_config(smpocfg.offset);
-    // sm_config_set_in_pin_base(&smpocfg.sm_cfg, dbpin); // for the Data Bus
-    // sm_config_set_out_pins(&smpocfg.sm_cfg, dbpin, 8); // for the Data Bus Pindirs
-    // sm_config_set_set_pins(&smpocfg.sm_cfg, dbpin, 8); // for the Data Bus Pindirs
-    // sm_config_set_jmp_pin(&smpocfg.sm_cfg, waitpin);   // for wait-states
-    // sm_config_set_sideset_pin_base(&smpocfg.sm_cfg, ctrlpin);
-    // sm_config_set_sideset(&smpocfg.sm_cfg, 2, true, false); // 2 pins, optional, not pindirs
-    // sm_config_set_clkdiv(&smpocfg.sm_cfg, PIO_BUS_CLKDIV);
-
-    // pio_gpio_init(pio, ctrlpin);        // WR-
-    // pio_gpio_init(pio, ctrlpin + 1);    // MS-
-    // pio_gpio_init(pio, ctrlpin + 2);    // WAIT-
-
-    // pio_sm_init(pio, sm, smpocfg.offset, &smpocfg.sm_cfg);
     pio_sm_pocfg smpocfg = pio_sm_configure(
         pio, sm, &cbm_out_program, cbm_out_program_get_default_config, 16.0f, PIO_FIFO_JOIN_NONE,
-        0, false, false,
         8, true, false,
-        dbpin, 8,
+        8, true, false,
         0, 0,
+        dbpin, 8,
         0, 0,
         ctrlpin, 3,
         waitpin
