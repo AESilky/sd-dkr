@@ -1,0 +1,3 @@
+[submodule "src/app/shell"]
+	path = src/app/shell
+	url = git@github.com:AESilky/sl-pshell.git
