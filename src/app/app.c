@@ -11,13 +11,25 @@
 
 #include "app.h"
 #include "appops.h"
+#ifdef BUS_MASTER
+    #include "dbusm/include/dbusm.h"
+#else
+    #include "dbusc/include/dbusc.h"
+#endif
 #include "dskops.h"
 
 #include "board.h"
 #include "debug_support.h"
 #include "util.h"
 
-#include "shell.h"
+#ifdef SHELL_ENABLE
+    #include "shell.h"
+    #ifdef BUS_MASTER
+        #include "dbusm/cmd/cmds.h"
+    #else
+        #include "dbusc/cmd/cmds.h"
+    #endif
+#endif
 #include "hwrt_t.h"
 #include "picoutil.h"
 #include "cmt.h"
@@ -94,11 +106,19 @@ static void _do_on_char_rdy_irq() {
  * @param data Nothing important
  */
 static void _clear_and_enable_input(void* data) {
+#ifdef SHELL_ENABLE
     // Initialize the shell
     shell_modinit("Disk-Keyboard-RTC", _do_on_char_rdy_irq);
-    //
+    #ifdef BUS_MASTER
+        // Initialize the Bus Master Commands
+        dbusmcmds_modinit();
+    #else
+        // Initialize the Bus Client Commands
+        dbusccmds_modinit();
+    #endif
     // Start the shell
     shell_start();
+#endif
 }
 
 static void _display_proc_status(void* data) {

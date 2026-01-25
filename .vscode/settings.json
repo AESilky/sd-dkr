@@ -1,3 +1,4 @@
 {
-    "cmake.sourceDirectory": "/home/esilky/proj/sd-dkr/src"
+    "cmake.sourceDirectory": "/home/esilky/proj/sd-dkr/src",
+    "C_Cpp.errorSquiggles": "enabled"
 }

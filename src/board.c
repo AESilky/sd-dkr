@@ -18,8 +18,11 @@
 
 #include "board.h"
 
-#include "dbusc.h"
+#ifdef BUS_MASTER
 #include "dbusm.h"
+#else
+#include "dbusc.h"
+#endif
 #include "debug_support.h"
 #include "picoutil.h"
 #include "util.h"

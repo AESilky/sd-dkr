@@ -151,8 +151,6 @@ set(APP_INCLUDES
 # Our Modules (direct functionality)
 set(CORE_LIBS
   cmt
-  dbusc
-  dbusm
   debugging
   app
   hwrt
@@ -221,6 +219,8 @@ target_link_libraries(dkr_db
   ${CORE_LIBS}
   ${PICO_LIBS}
   ${EXT_LIBS}
+  dbusc
+  dbusc_cmd
 )
 pico_set_linker_script(dkr_db ${CMAKE_SOURCE_DIR}/memmap_2040_cstm.ld)
 pico_add_extra_outputs(dkr_db)
@@ -234,6 +234,7 @@ pico_set_program_version(dkr_bm_db ${VERSION})
 target_compile_definitions(dkr_bm_db PUBLIC
   BUS_MASTER
 	DEBUG_MODE=1
+  SHELL_ENABLE
 )
 # Add the required include file paths for this module
 target_include_directories(dkr_bm_db PUBLIC
@@ -246,6 +247,8 @@ target_link_libraries(dkr_bm_db
   ${CORE_LIBS}
   ${PICO_LIBS}
   ${EXT_LIBS}
+  dbusm
+  dbusm_cmd
 )
 pico_set_linker_script(dkr_bm_db ${CMAKE_SOURCE_DIR}/memmap_2040_cstm.ld)
 pico_add_extra_outputs(dkr_bm_db)

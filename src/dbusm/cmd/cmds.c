@@ -13,8 +13,8 @@
 
 #include "util.h"
 
-#include "shell/include/shell.h"
-#include "shell/cmd/cmd_t.h"
+#include "shell.h"
+#include "cmd_t.h"
 
 #include <ctype.h>
 #include <stdbool.h>
@@ -60,18 +60,18 @@ static int _exec_dbm_wr(int argc, char** argv, const char* unparsed) {
 
 const cmd_handler_entry_t cmds_dbm_rd_entry = {
     _exec_dbm_rd,
-    4,
-    "dbmrd",
+    2,
+    "drd",
     NULL,
-    "RD from the Bus."
+    "RD Data."
 };
 
 const cmd_handler_entry_t cmds_dbm_wr_entry = {
     _exec_dbm_wr,
-    4,
-    "dbmwr",
+    2,
+    "dwr",
     "byte(hex)",
-    "WR a Byte to the Bus."
+    "WR a Data Byte."
 };
 
 

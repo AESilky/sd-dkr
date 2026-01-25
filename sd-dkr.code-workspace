@@ -10,6 +10,8 @@
 		},
 		"cortex-debug.variableUseNaturalFormat": false,
 		"cSpell.words": [
+			"DBUSM",
+			"dbusmcmds",
 			"multicore"
 		]
 	}
