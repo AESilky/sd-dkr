@@ -29,6 +29,8 @@
     #else
         #include "dbusc/cmd/cmds.h"
     #endif
+    #include "debugging/cmd/cmds.h"
+    #include "picohlp/cmd/cmds.h"
 #endif
 #include "hwrt_t.h"
 #include "picoutil.h"
@@ -109,6 +111,7 @@ static void _clear_and_enable_input(void* data) {
 #ifdef SHELL_ENABLE
     // Initialize the shell
     shell_modinit("Disk-Keyboard-RTC", _do_on_char_rdy_irq);
+    // Initialize modules that provide shell commands
     #ifdef BUS_MASTER
         // Initialize the Bus Master Commands
         dbusmcmds_modinit();
@@ -116,6 +119,8 @@ static void _clear_and_enable_input(void* data) {
         // Initialize the Bus Client Commands
         dbusccmds_modinit();
     #endif
+        debugcmds_modinit();
+        picocmds_modinit();
     // Start the shell
     shell_start();
 #endif
@@ -146,11 +151,12 @@ static void _display_proc_status(void* data) {
 static void _handle_housekeeping(__unused cmt_msg_t* msg) {
 }
 
+#ifdef SHELL_ENABLE
 // Handle `MSG_TERM_CHAR_RCVD` Let the Shell know that there are characters ready.
 static void _handle_term_char_rdy(__unused cmt_msg_t* msg) {
     shell_do_input_char_ready();
 }
-
+#endif
 
 
 // ############################################################################
@@ -196,8 +202,9 @@ static void _modinit(void) {
 
     // Add our message handlers
     cmt_msg_hdlr_add(MSG_PERIODIC_RT, _handle_housekeeping);
+#ifdef SHELL_ENABLE
     cmt_msg_hdlr_add(MSG_TERM_CHAR_RCVD, _handle_term_char_rdy);
-
+#endif
     // Initialize the Menus and Menu Manager
     appops_modinit();
 }

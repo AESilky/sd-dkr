@@ -11,7 +11,7 @@ extern "C" {
 #endif
 
 
-extern void dbcmds_modinit();
+extern void debugcmds_modinit();
 
 #ifdef __cplusplus
 }

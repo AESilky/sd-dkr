@@ -207,6 +207,7 @@ pico_set_program_name(dkr_db "${NAME_BASE}_DB")
 pico_set_program_version(dkr_db ${VERSION})
 target_compile_definitions(dkr_db PUBLIC
 	DEBUG_MODE=1
+  SHELL_ENABLE
 )
 # Add the required include file paths for this module
 target_include_directories(dkr_db PUBLIC
@@ -221,6 +222,8 @@ target_link_libraries(dkr_db
   ${EXT_LIBS}
   dbusc
   dbusc_cmd
+  debug_cmd
+  pico_cmd
 )
 pico_set_linker_script(dkr_db ${CMAKE_SOURCE_DIR}/memmap_2040_cstm.ld)
 pico_add_extra_outputs(dkr_db)
