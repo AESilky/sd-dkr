@@ -80,7 +80,3 @@ _autosave*
 
 # Exclude ZIP files. If any ZIPs are needed, add them specifically below
 **/*.zip
-
-
-# Keep the final uf2 files
-!build/*.uf2

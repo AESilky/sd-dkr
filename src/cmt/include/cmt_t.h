@@ -40,7 +40,6 @@ typedef enum MSG_ID_ {
     MSG_SW_ACTION,
     MSG_SW_DEBOUNCE,
     MSG_SW_LONGPRESS_DELAY,
-    MSG_TERM_CHAR_RCVD,
     //
     // Hardware-Runtime (HWRT) messages 0x60 - 0xBF
     MSG_HWRT_NOOP = 0x60,
@@ -55,7 +54,7 @@ typedef enum MSG_ID_ {
     MSG_CMD_INIT_TERMINAL,
     MSG_DISPLAY_MESSAGE,
     MSG_DLG_TIMEOUT,
-    MSG_INPUT_CHAR_READY,
+    MSG_TERM_CHAR_RCVD,
 } msg_id_t;
 #define MSG_ID_CNT (0x100)
 
