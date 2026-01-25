@@ -60,6 +60,26 @@ int ERRORNO;    // Primarily used by the Shell and Shell Commands. Globally avai
 // Interrupt (irq) handler functions
 // ====================================================================
 
+/**
+ * @brief Handle character ready notification from the shell.
+ * @ingroup shell_test
+ *
+ * In a full SD-Multicore-CMT implementation, this would post a message that
+ * a message handler would be registered for that would then call the shell
+ * `shell_do_input_char_ready` to have the shell then pull the character and
+ * process it (and any additional characters that are ready).
+ *
+ * The full implementation uses the message posting and handling because the
+ * shell method that invokes this is part of an interrupt handler.
+ *
+ */
+static void _do_on_char_rdy_irq() {
+    // Post MSG_TERM_CHAR_RCVD to have our app thread handle.
+    cmt_msg_t msg;
+    cmt_msg_init(&msg, MSG_TERM_CHAR_RCVD);
+    postAPPMsg(&msg);
+}
+
 
 // ############################################################################
 // 'Run After' Methods
@@ -75,7 +95,7 @@ int ERRORNO;    // Primarily used by the Shell and Shell Commands. Globally avai
  */
 static void _clear_and_enable_input(void* data) {
     // Initialize the shell
-    shell_modinit();
+    shell_modinit("Disk-Keyboard-RTC", _do_on_char_rdy_irq);
     //
     // Start the shell
     shell_start();
@@ -103,8 +123,14 @@ static void _display_proc_status(void* data) {
 // Message Handlers
 // ############################################################################
 //
-static void _handle_housekeeping(cmt_msg_t* msg) {
+static void _handle_housekeeping(__unused cmt_msg_t* msg) {
 }
+
+// Handle `MSG_TERM_CHAR_RCVD` Let the Shell know that there are characters ready.
+static void _handle_term_char_rdy(__unused cmt_msg_t* msg) {
+    shell_do_input_char_ready();
+}
+
 
 
 // ############################################################################
@@ -150,6 +176,7 @@ static void _modinit(void) {
 
     // Add our message handlers
     cmt_msg_hdlr_add(MSG_PERIODIC_RT, _handle_housekeeping);
+    cmt_msg_hdlr_add(MSG_TERM_CHAR_RCVD, _handle_term_char_rdy);
 
     // Initialize the Menus and Menu Manager
     appops_modinit();
