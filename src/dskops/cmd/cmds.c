@@ -15,8 +15,8 @@
 #include "multicore.h" // Some of the disk commands must be run on Core0
 #include "util.h"
 
-#include "shell/include/shell.h"
-#include "shell/cmd/cmd_t.h"
+#include "shell.h"
+#include "cmd_t.h"
 
 #include <ctype.h>
 #include <stdbool.h>
