@@ -65,7 +65,7 @@ void debug_init(debug_init_mode_t mode) {
         // Read switch to set debug enabled flag
         debug_sw_init();
         debug_trace_init();
-        sleep_ms(80); // Ok to `sleep` as msg system not started
+        sleep_ms(80); // Ok to sleep
         // Check the switch
         bool pressed = debug_sw_pressed();
 #if (DEBUG_MODE != 0)

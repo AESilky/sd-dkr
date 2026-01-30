@@ -34,7 +34,7 @@ extern "C" {
 // Note: Values (Pins) are the GPIO number, not the physical pins on the device.
 //
 
-// SPI 0 is used for the SD Card.
+// SPI for the SD Card.
 //
 #define SPI_SD_DEVICE           spi1            // Hardware SPI to use
 #define SPI_SD_MISO             GP28
@@ -87,12 +87,22 @@ extern "C" {
 //
 #ifndef PIO_DEFS            // Defaults for the PIO use
 #define PIO_DEFS
+#ifdef BUS_MASTER
+#define PIO_BUS_CTRL            pio1            // PIO Block 1 is used to watch and control system bus
+#define PIO_BCM_RD_SM           0               // State Machine 1 is used for Master RD-
+#define PIO_BCM_WR_SM           1               // State Machine 2 is used for Master WR-
+#else
 #define PIO_BUS_CTRL            pio1            // PIO Block 0 is used to watch and control system bus
 #define PIO_BC_RD_SM            0               // State Machine 0 is used to watch RD-
 #define PIO_BC_WR_SM            1               // State Machine 1 is used to watch WR-
-#define PIO_BCM_RD_SM           2               // State Machine 2 is used for Master RD-
-#define PIO_BCM_WR_SM           3               // State Machine 3 is used for Master WR-
-#define PIO_BREQ_IRQ            PIO0_IRQ_0      // PIO IRQ used to signal bus request
+#define PIO_BC_WAIT_SM          2               // State Machine 2 is used to clear the WAIT signal-
+#define PIO_RD_REQ_IRQ          PIO1_IRQ_0      // PIO IRQ used to signal bus RD Request
+#define PIO_WR_REQ_IRQ          PIO1_IRQ_1      // PIO IRQ used to signal bus WR Request
+#define PIO_IRQ_RDRQ_IDX        0               // PIO IRQ index (0/1) for the RD Request
+#define PIO_IRQ_RDRQ_BIT        pis_interrupt0  // PIO Bit used to signal RD Request to CPU
+#define PIO_IRQ_WRRQ_IDX        1               // PIO IRQ index (0/1) for the WR Request
+#define PIO_IRQ_WRRQ_BIT        pis_interrupt1  // PIO Bit used to signal WR Request to CPU
+#endif
 #endif
 
 // IRQ Inputs

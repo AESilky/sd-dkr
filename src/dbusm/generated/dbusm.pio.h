@@ -8,6 +8,8 @@
 #include "hardware/pio.h"
 #endif
 
+#define TRIGGER_RD 4
+
 // ------ //
 // cbm_in //
 // ------ //

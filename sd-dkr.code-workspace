@@ -10,9 +10,22 @@
 		},
 		"cortex-debug.variableUseNaturalFormat": false,
 		"cSpell.words": [
+			"dbusc",
 			"DBUSM",
 			"dbusmcmds",
-			"multicore"
+			"diagout",
+			"errledfn",
+			"irqn",
+			"monrd",
+			"monwr",
+			"multicore",
+			"pocfg",
+			"RDRQ",
+			"statled",
+			"waitclr",
+			"WAITRQ",
+			"wrreq",
+			"WRRQ"
 		]
 	}
 }

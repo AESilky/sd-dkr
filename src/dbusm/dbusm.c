@@ -81,7 +81,7 @@ static pio_sm_pocfg _cbm_wr_pio_init(PIO pio, uint sm, uint dbpin, uint ctrlpin,
 
 uint8_t dbusm_rd() {
     // To Read from the Bus, clear the IRQ bit then read from the Input FIFO
-    pio_interrupt_clear(_cbm_rd_pocfg.pio, 4);
+    pio_interrupt_clear(_cbm_rd_pocfg.pio, TRIGGER_RD);
     uint32_t v = pio_sm_get_blocking(_cbm_rd_pocfg.pio, _cbm_rd_pocfg.sm);
     return ((uint8_t)((v & 0xFF000000) >> 24));
 }
