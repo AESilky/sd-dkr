@@ -22,11 +22,9 @@
 
 
 const cmd_handler_entry_t cmds_dbus_data_entry;
-const cmd_handler_entry_t cmds_dbus_dir_entry;
-const cmd_handler_entry_t cmds_dbus_dlatch_entry;
 const cmd_handler_entry_t cmds_dbus_rd_entry;
+const cmd_handler_entry_t cmds_dbus_wait_entry;
 const cmd_handler_entry_t cmds_dbus_wr_entry;
-
 
 static int _exec_data(int argc, char** argv, const char* unparsed) {
     if (argc > 2) {
@@ -53,58 +51,6 @@ static int _exec_data(int argc, char** argv, const char* unparsed) {
     return (0);
 }
 
-static int _exec_dir(int argc, char** argv, const char* unparsed) {
-    int retval = 0;
-    if (argc > 2) {
-        // We only take 0 or 1 arguments.
-        cmd_help_display(&cmds_dbus_dir_entry, HELP_DISP_USAGE);
-        return (-1);
-    }
-    if (argc > 1) {
-        if (strcasecmp(argv[1], "O") == 0) {
-            // Set to output
-            dbus_set_out();
-            shell_printf("Data Bus set to OUT\n");
-        }
-        else if (strcasecmp(argv[1], "I") == 0) {
-            // Set to input
-            dbus_set_in();
-            shell_printf("Data Bus set to IN\n");
-        }
-        else {
-            shell_printferr("Value error: '%s'\n", argv[1]);
-            cmd_help_display(&cmds_dbus_dir_entry, HELP_DISP_USAGE);
-            return (-1);
-        }
-    }
-    // Display the direction
-    char* dstr = (dbus_is_out() ? "OUT" : "IN");
-    shell_printf("Data Bus is: %s\n", dstr);
-
-    return (retval);
-}
-
-static int _exec_dlatch(int argc, char** argv, const char* unparsed) {
-    int retval = 0;
-    if (argc > 2) {
-        // We only take 0 or 1 arguments.
-        cmd_help_display(&cmds_dbus_dlatch_entry, HELP_DISP_USAGE);
-        return (-1);
-    }
-    bool v;
-    if (argc > 1) {
-        v = bool_from_str(argv[1]);
-// ZZZ        gpio_put(OP_DATA_LATCH, v);
-        const char* vstr = (v ? "HIGH" : "LOW");
-        shell_printf("Set DataLatch: %s\n", vstr);
-    }
-    // Display the level
-// ZZZ    const char* dlstr = (gpio_get(OP_DATA_LATCH) ? "HIGH" : "LOW");
-// ZZZ    shell_printf("DataLatch is: %s\n", dlstr);
-
-    return (retval);
-}
-
 static int _exec_dbm_rd(int argc, char** argv, const char* unparsed) {
     int retval = 0;
     if (argc > 2) {
@@ -122,6 +68,27 @@ static int _exec_dbm_rd(int argc, char** argv, const char* unparsed) {
     // Display the level
 // ZZZ    const char* drstr = (gpio_get(OP_DATA_RD) ? "HIGH" : "LOW");
 // ZZZ    shell_printf("DRD is: %s\n", drstr);
+
+    return (retval);
+}
+
+static int _exec_dbm_wait(int argc, char** argv, const char* unparsed) {
+    int retval = 0;
+    if (argc > 2) {
+        // We only take 0 or 1 arguments.
+        cmd_help_display(&cmds_dbus_wait_entry, HELP_DISP_USAGE);
+        return (-1);
+    }
+    bool v;
+    if (argc > 1) {
+        v = bool_from_str(argv[1]);
+        gpio_put(CTRL_WAITRQ, v);
+        const char* vstr = (v ? "HIGH" : "LOW");
+        shell_printf("Set Wait: %s\n", vstr);
+    }
+    // Display the level
+    const char* drstr = (gpio_get(CTRL_WAITRQ) ? "HIGH" : "LOW");
+    shell_printf("Wait is: %s\n", drstr);
 
     return (retval);
 }
@@ -155,28 +122,20 @@ const cmd_handler_entry_t cmds_dbus_data_entry = {
     "Get value from Data Bus. Set value to Data Bus.",
 };
 
-const cmd_handler_entry_t cmds_dbus_dir_entry = {
-    _exec_dir,
-    7,
-    ".dbusdir",
-    "[I|O]",
-    "Show the direction of the Data Bus. Set the direction of the Data Bus.",
-};
-
-const cmd_handler_entry_t cmds_dbus_dlatch_entry = {
-    _exec_dlatch,
-    5,
-    ".dlatch",
-    "[0|1]",
-    "Show the DLATCH state. Set the DLATCH state."
-};
-
 const cmd_handler_entry_t cmds_dbus_rd_entry = {
     _exec_dbm_rd,
     8,
     ".dbusrdctrl",
     "[0|1]",
     "Show the RD ctrl state. Set the RD ctrl state."
+};
+
+const cmd_handler_entry_t cmds_dbus_wait_entry = {
+    _exec_dbm_wait,
+    1,
+    "wait",
+    "[0|1]",
+    "Show the Wait line state. Set the Wait line state."
 };
 
 const cmd_handler_entry_t cmds_dbus_wr_entry = {
@@ -191,8 +150,7 @@ const cmd_handler_entry_t cmds_dbus_wr_entry = {
 
 void dbusccmds_modinit(void) {
     cmd_register(&cmds_dbus_data_entry);
-    cmd_register(&cmds_dbus_dir_entry);
-    cmd_register(&cmds_dbus_dlatch_entry);
     cmd_register(&cmds_dbus_rd_entry);
+    cmd_register(&cmds_dbus_wait_entry);
     cmd_register(&cmds_dbus_wr_entry);
 }

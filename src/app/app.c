@@ -205,7 +205,7 @@ static void _modinit(void) {
 #ifdef SHELL_ENABLE
     cmt_msg_hdlr_add(MSG_TERM_CHAR_RCVD, _handle_term_char_rdy);
 #endif
-    // Initialize the Menus and Menu Manager
+    // Initialize the App Modules
     appops_modinit();
 }
 

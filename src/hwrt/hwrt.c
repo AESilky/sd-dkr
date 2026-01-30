@@ -16,6 +16,11 @@
 
 #include "cmt.h"
 #include "app.h"
+#ifdef BUS_MASTER
+#include "dbusm.h"
+#else
+#include "dbusc.h"
+#endif
 #include "util.h"
 
 #include "dskops/dskops.h"
@@ -43,17 +48,6 @@ static void _handle_apps_started(cmt_msg_t* msg);
 // Run after delay methods
 // ====================================================================
 
-static void _debug_usb_announce(void* data) {
-    // Debugging has switched over to the USB. Say hello...
-    debug_printf("Console on the USB\n");
-}
-
-static void _console_switch_to_usb(void* data) {
-    // Switch debugging/console over to the USB on Core-1
-    debug_init(DIM_STDIO_TO_USB);
-    cmt_run_after_ms(800, _debug_usb_announce, NULL);
-}
-
 
 // ====================================================================
 // Message handler methods
@@ -69,6 +63,15 @@ static void _handle_apps_started(cmt_msg_t* msg) {
 
     // Initialize other modules that the RT oversees.
     //
+    // Switch debug to the USB
+    debug_init(DIM_STDIO_TO_USB);
+    // Initialize the Bus Controller
+#ifdef BUS_MASTER
+    dbusm_modinit();
+#else
+    dbusc_modinit();
+#endif
+
 }
 
 /**
@@ -175,15 +178,11 @@ void core1_main() {
 static void _hwrt_started(cmt_msg_t* msg) {
     // Initialize all of the things that use the message loop (it is running now).
 
-    // SPI 0 initialization for the MicroSD Card.
-    spi_init(SPI_SD_DEVICE, SPI_SLOW_SPEED);
+    // SPI initialization for the MicroSD Card.
+//    spi_init(SPI_SD_DEVICE, SPI_SLOW_SPEED);
 
     // Disk Operations
-    dskops_modinit();
-
-    // Let the USB subsystem have some time to come up, then
-    // Switch the console over to the USB
-    cmt_run_after_ms(100, _console_switch_to_usb, NULL);
+//    dskops_modinit();
 
     cmt_msg_hdlr_add(MSG_APPS_STARTED, _handle_apps_started);
     cmt_msg_hdlr_add(MSG_PERIODIC_RT, _handle_housekeeping);

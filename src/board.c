@@ -147,55 +147,16 @@ int board_init() {
     gpio_set_dir(CTRL_WR, GPIO_IN);
     gpio_set_pulls(CTRL_WR, true, false);  // Pull-Up the WR- line
 #endif
-    // Initialize the Data Bus (Initially set to input)
-    gpio_set_function(DATA0, GPIO_FUNC_SIO);
-    gpio_set_dir(DATA0, GPIO_IN);
-    gpio_set_pulls(DATA0, true, false); // Pull-Up
-    gpio_set_drive_strength(DATA0, GPIO_DRIVE_STRENGTH_4MA);
-    gpio_set_function(DATA1, GPIO_FUNC_SIO);
-    gpio_set_dir(DATA1, GPIO_IN);
-    gpio_set_pulls(DATA1, true, false); // Pull-Up
-    gpio_set_drive_strength(DATA1, GPIO_DRIVE_STRENGTH_4MA);
-    gpio_set_function(DATA2, GPIO_FUNC_SIO);
-    gpio_set_dir(DATA2, GPIO_IN);
-    gpio_set_pulls(DATA2, true, false); // Pull-Up
-    gpio_set_drive_strength(DATA2, GPIO_DRIVE_STRENGTH_4MA);
-    gpio_set_function(DATA3, GPIO_FUNC_SIO);
-    gpio_set_dir(DATA3, GPIO_IN);
-    gpio_set_pulls(DATA3, true, false); // Pull-Up
-    gpio_set_drive_strength(DATA3, GPIO_DRIVE_STRENGTH_4MA);
-    gpio_set_function(DATA4, GPIO_FUNC_SIO);
-    gpio_set_dir(DATA4, GPIO_IN);
-    gpio_set_pulls(DATA4, true, false); // Pull-Up
-    gpio_set_drive_strength(DATA4, GPIO_DRIVE_STRENGTH_4MA);
-    gpio_set_function(DATA5, GPIO_FUNC_SIO);
-    gpio_set_dir(DATA5, GPIO_IN);
-    gpio_set_pulls(DATA5, true, false); // Pull-Up
-    gpio_set_drive_strength(DATA5, GPIO_DRIVE_STRENGTH_4MA);
-    gpio_set_function(DATA6, GPIO_FUNC_SIO);
-    gpio_set_dir(DATA6, GPIO_IN);
-    gpio_set_pulls(DATA6, true, false); // Pull-Up
-    gpio_set_drive_strength(DATA6, GPIO_DRIVE_STRENGTH_4MA);
-    gpio_set_function(DATA7, GPIO_FUNC_SIO);
-    gpio_set_dir(DATA7, GPIO_IN);
-    gpio_set_pulls(DATA7, true, false); // Pull-Up
-    gpio_set_drive_strength(DATA7, GPIO_DRIVE_STRENGTH_4MA);
-    // Initialize the controller
-#ifdef BUS_MASTER
-    dbusm_modinit();
-#else
-    dbusc_modinit();
-#endif
 
-    // SPI 0 Pins for MircoSD Card
-    gpio_set_function(SPI_SD_SCK, GPIO_FUNC_SPI);
-    gpio_set_function(SPI_SD_MOSI, GPIO_FUNC_SPI);
-    gpio_set_function(SPI_SD_MISO, GPIO_FUNC_SPI);
-    // SPI 0 Signal drive strengths
-    gpio_set_drive_strength(SPI_SD_SCK, GPIO_DRIVE_STRENGTH_4MA);
-    gpio_set_drive_strength(SPI_SD_SCK, GPIO_DRIVE_STRENGTH_4MA);
-    // SPI 0 Data In Pull-Up
-    gpio_pull_up(SPI_SD_MISO);
+    // SPI Pins for MicroSD Card
+    // gpio_set_function(SPI_SD_SCK, GPIO_FUNC_SPI);
+    // gpio_set_function(SPI_SD_MOSI, GPIO_FUNC_SPI);
+    // gpio_set_function(SPI_SD_MISO, GPIO_FUNC_SPI);
+    // // SPI Signal drive strengths
+    // gpio_set_drive_strength(SPI_SD_SCK, GPIO_DRIVE_STRENGTH_4MA);
+    // gpio_set_drive_strength(SPI_SD_SCK, GPIO_DRIVE_STRENGTH_4MA);
+    // // SPI Data In Pull-Up
+    // gpio_pull_up(SPI_SD_MISO);
 
     // (other than BUS / CTRL, SPI, I2C, UART, and chip - selects)
     //
